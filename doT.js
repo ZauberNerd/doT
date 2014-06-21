@@ -14,7 +14,7 @@ var doT = {
         defineParams:/^\s*([\w$]+):([\s\S]+)/,
         conditional: /\{\{\?(\?)?\s*([\s\S]*?)\s*\}\}/g,
         iterate:     /\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g,
-        varname:    'it',
+        varname:    'ctx',
         strip:      true,
         append:     true
     },
