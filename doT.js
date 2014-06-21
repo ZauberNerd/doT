@@ -30,15 +30,15 @@ var startend = {
 }, skip = /$^/;
 
 
-function resolveDefs(c, block, def) {
+function resolveDefs(config, block, def) {
     return ((typeof block === 'string') ? block : block.toString())
-    .replace(c.define || skip, function(m, code, assign, value) {
+    .replace(config.define || skip, function(m, code, assign, value) {
         if (code.indexOf('def.') === 0) {
             code = code.substring(4);
         }
         if (!(code in def)) {
             if (assign === ':') {
-                if (c.defineParams) value.replace(c.defineParams, function(m, param, v) {
+                if (config.defineParams) value.replace(config.defineParams, function(m, param, v) {
                     def[code] = {arg: param, text: v};
                 });
                 if (!(code in def)) def[code]= value;
@@ -48,8 +48,8 @@ function resolveDefs(c, block, def) {
         }
         return '';
     })
-    .replace(c.use || skip, function(m, code) {
-        if (c.useParams) code = code.replace(c.useParams, function(m, s, d, param) {
+    .replace(config.use || skip, function(m, code) {
+        if (config.useParams) code = code.replace(config.useParams, function(m, s, d, param) {
             if (def[d] && def[d].arg && param) {
                 var rw = (d+":"+param).replace(/'|\\/g, '_');
                 def.__exp = def.__exp || {};
@@ -58,7 +58,7 @@ function resolveDefs(c, block, def) {
             }
         });
         var v = new Function("def", "return " + code)(def);
-        return v ? resolveDefs(c, v, def) : v;
+        return v ? resolveDefs(config, v, def) : v;
     });
 }
 
@@ -93,7 +93,9 @@ doT.template = function(tmpl, config, def) {
             config[key] = dot.defaults[key];
         }
     }
-    var cse = config.append ? startend.append : startend.split, sid = 0, indv,
+    var cse = config.append ? startend.append : startend.split,
+        sid = 0,
+        indv,
         str  = (config.use || config.define) ? resolveDefs(config, tmpl, def || {}) : tmpl;
 
     str = ("var out='" + (config.strip ? str.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g,' ')
