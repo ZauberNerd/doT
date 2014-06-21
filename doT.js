@@ -63,6 +63,24 @@ function resolveDefs(c, block, def) {
 }
 
 
+function safeObject(code) {
+    var parts  = code.split('.'),
+        len    = parts.length,
+        result = '(' + parts[0],
+        obj    = parts[0],
+        i      = 1;
+
+    if (len <= 1) { return code; }
+
+    for (; i < len; i += 1) {
+        obj += '.' + parts[i];
+        result += ' && ' + obj;
+    }
+
+    return result + ' || \'\'' + ')';
+}
+
+
 function unescape(code) {
     return code.replace(/\\('|\\)/g, "$1").replace(/[\r\t\n]/g, ' ');
 }
@@ -82,10 +100,10 @@ doT.template = function(tmpl, c, def) {
                 .replace(/\r|\n|\t|\/\*[\s\S]*?\*\//g,''): str)
         .replace(/'|\\/g, '\\$&')
         .replace(c.interpolate || skip, function(m, code) {
-            return cse.start + unescape(code) + cse.end;
+            return cse.start + safeObject(unescape(code)) + cse.end;
         })
         .replace(c.encode || skip, function(m, code) {
-            return cse.start + unescape(code) + cse.endencode;
+            return cse.start + safeObject(unescape(code)) + cse.endencode;
         })
         .replace(c.conditional || skip, function(m, elsecase, code) {
             return elsecase ?
