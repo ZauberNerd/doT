@@ -16,8 +16,7 @@ var doT = {
         iterate:     /\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g,
         varname:    'it',
         strip:      true,
-        append:     true,
-        selfcontained: false
+        append:     true
     },
     template: undefined, //fn, compile template
     compile:  undefined  //fn, for express
