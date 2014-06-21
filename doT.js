@@ -24,19 +24,11 @@ var doT = {
 };
 
 
-function encodeHTMLSource() {
-	var encodeHTMLRules = { "&": "&#38;", "<": "&#60;", ">": "&#62;", '"': '&#34;', "'": '&#39;', "/": '&#47;' },
-		matchHTML = /&(?!#?\w+;)|<|>|"|'|\//g;
-	return function() {
-		return this ? this.replace(matchHTML, function(m) {return encodeHTMLRules[m] || m;}) : this;
-	};
-}
-String.prototype._doTencodeHTML = encodeHTMLSource();
-
 var startend = {
 	append: { start: "'+(",      end: ")+'",      endencode: "||'').toString()._doTencodeHTML()+'" },
 	split:  { start: "';out+=(", end: ");out+='", endencode: "||'').toString()._doTencodeHTML();out+='"}
 }, skip = /$^/;
+
 
 function resolveDefs(c, block, def) {
 	return ((typeof block === 'string') ? block : block.toString())
@@ -70,13 +62,15 @@ function resolveDefs(c, block, def) {
 	});
 }
 
+
 function unescape(code) {
 	return code.replace(/\\('|\\)/g, "$1").replace(/[\r\t\n]/g, ' ');
 }
 
+
 doT.template = function(tmpl, c, def) {
 	c = c || doT.templateSettings;
-	var cse = c.append ? startend.append : startend.split, needhtmlencode, sid = 0, indv,
+	var cse = c.append ? startend.append : startend.split, sid = 0, indv,
 		str  = (c.use || c.define) ? resolveDefs(c, tmpl, def || {}) : tmpl;
 
 	str = ("var out='" + (c.strip ? str.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g,' ')
@@ -86,7 +80,6 @@ doT.template = function(tmpl, c, def) {
 			return cse.start + unescape(code) + cse.end;
 		})
 		.replace(c.encode || skip, function(m, code) {
-			needhtmlencode = true;
 			return cse.start + unescape(code) + cse.endencode;
 		})
 		.replace(c.conditional || skip, function(m, elsecase, code) {
@@ -108,9 +101,6 @@ doT.template = function(tmpl, c, def) {
 		.replace(/(\s|;|\}|^|\{)out\+='';/g, '$1').replace(/\+''/g, '')
 		.replace(/(\s|;|\}|^|\{)out\+=''\+/g,'$1out+=');
 
-	if (needhtmlencode && c.selfcontained) {
-		str = "String.prototype._doTencodeHTML=(" + encodeHTMLSource.toString() + "());" + str;
-	}
 	try {
 		return new Function(c.varname, str);
 	} catch (e) {
@@ -118,6 +108,7 @@ doT.template = function(tmpl, c, def) {
 		throw e;
 	}
 };
+
 
 doT.compile = function(tmpl, def) {
 	return doT.template(tmpl, null, def);
