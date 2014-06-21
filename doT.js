@@ -69,7 +69,12 @@ function unescape(code) {
 
 
 doT.template = function(tmpl, c, def) {
-    c = c || doT.templateSettings;
+    c = c || {};
+    for (var key in doT.templateSettings) {
+        if (doT.templateSettings.hasOwnProperty(key)) {
+            c[key] = (c[key] === undefined) ? doT.templateSettings[key] : c[key];
+        }
+    }
     var cse = c.append ? startend.append : startend.split, sid = 0, indv,
         str  = (c.use || c.define) ? resolveDefs(c, tmpl, def || {}) : tmpl;
 
