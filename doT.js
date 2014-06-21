@@ -31,11 +31,11 @@ function encodeHTMLSource() {
 		return this ? this.replace(matchHTML, function(m) {return encodeHTMLRules[m] || m;}) : this;
 	};
 }
-String.prototype.encodeHTML = encodeHTMLSource();
+String.prototype._doTencodeHTML = encodeHTMLSource();
 
 var startend = {
-	append: { start: "'+(",      end: ")+'",      endencode: "||'').toString().encodeHTML()+'" },
-	split:  { start: "';out+=(", end: ");out+='", endencode: "||'').toString().encodeHTML();out+='"}
+	append: { start: "'+(",      end: ")+'",      endencode: "||'').toString()._doTencodeHTML()+'" },
+	split:  { start: "';out+=(", end: ");out+='", endencode: "||'').toString()._doTencodeHTML();out+='"}
 }, skip = /$^/;
 
 function resolveDefs(c, block, def) {
@@ -109,7 +109,7 @@ doT.template = function(tmpl, c, def) {
 		.replace(/(\s|;|\}|^|\{)out\+=''\+/g,'$1out+=');
 
 	if (needhtmlencode && c.selfcontained) {
-		str = "String.prototype.encodeHTML=(" + encodeHTMLSource.toString() + "());" + str;
+		str = "String.prototype._doTencodeHTML=(" + encodeHTMLSource.toString() + "());" + str;
 	}
 	try {
 		return new Function(c.varname, str);
