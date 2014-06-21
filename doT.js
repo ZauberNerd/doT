@@ -4,7 +4,7 @@
 
 var doT = {
     version: '1.0.1',
-    templateSettings: {
+    defaults: {
         evaluate:    /\{\{([\s\S]+?(\}?)+)\}\}/g,
         interpolate: /\{\{=([\s\S]+?)\}\}/g,
         encode:      /\{\{!([\s\S]+?)\}\}/g,
@@ -86,37 +86,37 @@ function unescape(code) {
 }
 
 
-doT.template = function(tmpl, c, def) {
-    c = c || {};
-    for (var key in doT.templateSettings) {
-        if (doT.templateSettings.hasOwnProperty(key)) {
-            c[key] = (c[key] === undefined) ? doT.templateSettings[key] : c[key];
+doT.template = function(tmpl, config, def) {
+    config = config || {};
+    for (var key in doT.defaults) {
+        if (config[key] === undefined) {
+            config[key] = dot.defaults[key];
         }
     }
-    var cse = c.append ? startend.append : startend.split, sid = 0, indv,
-        str  = (c.use || c.define) ? resolveDefs(c, tmpl, def || {}) : tmpl;
+    var cse = config.append ? startend.append : startend.split, sid = 0, indv,
+        str  = (config.use || config.define) ? resolveDefs(config, tmpl, def || {}) : tmpl;
 
-    str = ("var out='" + (c.strip ? str.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g,' ')
+    str = ("var out='" + (config.strip ? str.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g,' ')
                 .replace(/\r|\n|\t|\/\*[\s\S]*?\*\//g,''): str)
         .replace(/'|\\/g, '\\$&')
-        .replace(c.interpolate || skip, function(m, code) {
+        .replace(config.interpolate || skip, function(m, code) {
             return cse.start + safeObject(unescape(code)) + cse.end;
         })
-        .replace(c.encode || skip, function(m, code) {
+        .replace(config.encode || skip, function(m, code) {
             return cse.start + safeObject(unescape(code)) + cse.endencode;
         })
-        .replace(c.conditional || skip, function(m, elsecase, code) {
+        .replace(config.conditional || skip, function(m, elsecase, code) {
             return elsecase ?
                 (code ? "';}else if(" + unescape(code) + "){out+='" : "';}else{out+='") :
                 (code ? "';if(" + unescape(code) + "){out+='" : "';}out+='");
         })
-        .replace(c.iterate || skip, function(m, iterate, vname, iname) {
+        .replace(config.iterate || skip, function(m, iterate, vname, iname) {
             if (!iterate) return "';} } out+='";
             sid+=1; indv=iname || "i"+sid; iterate=unescape(iterate);
             return "';var arr"+sid+"="+iterate+";if(arr"+sid+"){var "+vname+","+indv+"=-1,l"+sid+"=arr"+sid+".length-1;while("+indv+"<l"+sid+"){"
                 +vname+"=arr"+sid+"["+indv+"+=1];out+='";
         })
-        .replace(c.evaluate || skip, function(m, code) {
+        .replace(config.evaluate || skip, function(m, code) {
             return "';" + unescape(code) + "out+='";
         })
         + "';return out;")
@@ -125,7 +125,7 @@ doT.template = function(tmpl, c, def) {
         .replace(/(\s|;|\}|^|\{)out\+=''\+/g,'$1out+=');
 
     try {
-        return new Function(c.varname, str);
+        return new Function(config.varname, str);
     } catch (e) {
         if (typeof console !== 'undefined') console.log("Could not create a template function: " + str);
         throw e;
