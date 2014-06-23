@@ -85,6 +85,17 @@ function unescape(code) {
 }
 
 
+function encodeHTMLSource() {
+    var encodeHTMLRules = { "&": "&#38;", "<": "&#60;", ">": "&#62;", "\"": "&#34;", "'": "&#39;", "`": "&#96;", "\/": "&#47;" }
+        matchHTML = /&(?!#?\w+;)|<|>|"|'|\//g;
+    return function() {
+        return this ? this.replace(matchHTML, function(m) {return encodeHTMLRules[m] || m;}) : this;
+    };
+}
+String.prototype._doTencodeHTML = encodeHTMLSource();
+
+
+
 doT.template = function(tmpl, config, def) {
     config = config || {};
     for (var key in doT.defaults) {
@@ -124,6 +135,8 @@ doT.template = function(tmpl, config, def) {
         .replace(/\n/g, '\\n').replace(/\t/g, '\\t').replace(/\r/g, '\\r')
         .replace(/(\s|;|\}|^|\{)out\+='';/g, '$1').replace(/\+''/g, '')
         .replace(/(\s|;|\}|^|\{)out\+=''\+/g,'$1out+=');
+
+    str = "String.prototype.encodeHTML=(" + encodeHTMLSource.toString() + "());" + str;
 
     try {
         return new Function(config.varname, str);
