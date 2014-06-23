@@ -89,7 +89,7 @@ doT.template = function(tmpl, config, def) {
     config = config || {};
     for (var key in doT.defaults) {
         if (config[key] === undefined) {
-            config[key] = dot.defaults[key];
+            config[key] = doT.defaults[key];
         }
     }
     var cse = config.append ? startend.append : startend.split,
