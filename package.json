@@ -1,20 +1,24 @@
 {
   "name": "dot",
-  "description": "Concise and fast javascript templating compatible with nodejs and other javascript environments",
+  "description": "Concise and fast javascript templating for node.js based on Laura Doktorova's doT.js",
   "keywords": [
     "template",
     "fast",
     "simple",
     "templating"
   ],
-  "version": "1.0.1",
+  "version": "1.1.0",
   "main": "index",
   "bin": {
     "dottojs": "./bin/dot-packer"
   },
-  "homepage": "http://github.com/olado/doT",
-  "repository": "git://github.com/olado/doT.git",
+  "private": true,
+  "homepage": "http://github.com/ZauberNerd/doT",
+  "repository": "git://github.com/ZauberNerd/doT.git",
   "author": "Laura Doktorova <ldoktorova@gmail.com>",
+  "contributors": [
+    "Bjoern Brauer <bjoernjohannes@gmail.com>"
+  ],
   "engines": [
     "node >=0.2.6"
   ],
