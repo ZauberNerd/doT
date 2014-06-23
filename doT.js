@@ -115,7 +115,7 @@ doT.template = function(tmpl, config, def) {
             return cse.start + safeObject(unescape(code)) + cse.end;
         })
         .replace(config.encode || skip, function(m, code) {
-            return cse.start + safeObject(unescape(code)) + cse.endencode;
+            return cse.start + unescape(code) + cse.endencode;
         })
         .replace(config.conditional || skip, function(m, elsecase, code) {
             return elsecase ?
