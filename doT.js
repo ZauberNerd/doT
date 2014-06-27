@@ -5,15 +5,16 @@
 var doT = {
     version: '1.0.1',
     defaults: {
-        evaluate:    /\{\{([\s\S]+?(\}?)+)\}\}/g,
-        interpolate: /\{\{=([\s\S]+?)\}\}/g,
-        encode:      /\{\{!([\s\S]+?)\}\}/g,
-        use:         /\{\{#([\s\S]+?)\}\}/g,
+        evaluate:    /\{\{([\s\S]+?(\}?)+)\}\}/g, // {{ }}
+        interpolate: /\{\{=([\s\S]+?)\}\}/g, // {{= }}
+        encode:      /\{\{!([\s\S]+?)\}\}/g, // {{! }}
+        use:         /\{\{#([\s\S]+?)\}\}/g, // {{# }}
         useParams:   /(^|[^\w$])def(?:\.|\[[\'\"])([\w$\.]+)(?:[\'\"]\])?\s*\:\s*([\w$\.]+|\"[^\"]+\"|\'[^\']+\'|\{[^\}]+\})/g,
-        define:      /\{\{##\s*([\w\.$]+)\s*(\:|=)([\s\S]+?)#\}\}/g,
+        define:      /\{\{##\s*([\w\.$]+)\s*(\:|=)([\s\S]+?)#\}\}/g, // {{## }}
         defineParams:/^\s*([\w$]+):([\s\S]+)/,
-        conditional: /\{\{\?(\?)?\s*([\s\S]*?)\s*\}\}/g,
-        iterate:     /\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g,
+        conditional: /\{\{\?(\?)?\s*([\s\S]*?)\s*\}\}/g, // {{? }}
+        iterate:     /\{\{~\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g, // {{~ }}
+        forin:       /\{\{@(@)?\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g, // {{@ }}
         varname:    'it',
         strip:      true,
         append:     true
@@ -127,6 +128,13 @@ doT.template = function(tmpl, config, def) {
             sid+=1; indv=iname || "i"+sid; iterate=unescape(iterate);
             return "';var arr"+sid+"="+iterate+";if(arr"+sid+"){var "+vname+","+indv+"=-1,l"+sid+"=arr"+sid+".length-1;while("+indv+"<l"+sid+"){"
                 +vname+"=arr"+sid+"["+indv+"+=1];out+='";
+        })
+        .replace(config.forin || skip, function (m, own, iterate, vname, kname) {
+            if (!iterate) return "';} } " + (own ? "} " : "") + "out+='";
+            sid += 1; iterate = unescape(iterate);
+            return "';var obj" + sid + "=" + iterate + ";if(obj" + sid + "){var " + kname + "," + vname + ";for(" + kname + " in obj" + sid + "){"
+                + (own ? "if(obj" + sid + ".hasOwnProperty(" + kname + ")){ " : "")
+                + vname + "=obj" + sid + "[" + kname + "];out+='";
         })
         .replace(config.evaluate || skip, function(m, code) {
             return "';" + unescape(code) + "out+='";

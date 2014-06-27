@@ -28,3 +28,40 @@ describe('doT', function(){
 		});
 	});
 });
+
+describe("iterate object (for..in)", function() {
+    function Obj() {
+        this.awesome = "doT.js";
+    }
+    Obj.prototype = {
+        one: 1,
+        2: "two",
+        THREE: 3
+    };
+
+    var obj;
+
+    beforeEach(function() {
+        obj = new Obj();
+    });
+
+    it("should iterate all object properties", function() {
+        var tpl = doT.compile('{{@ it :val :key}}[{{=key}}={{=val}}]{{@}}');
+        var exp = '';
+        for (var k in obj) {
+            exp += "[" + k + "=" + obj[k] + "]";
+        }
+        assert.equal(tpl(obj), exp);
+    });
+
+    it("should iterate only own properties", function() {
+        var tpl = doT.compile('{{@@ it :val :key}}[{{=key}}={{=val}}]{{@@}}');
+        var exp = '';
+        for (var k in obj) {
+            if (obj.hasOwnProperty(k)) {
+                exp += "[" + k + "=" + obj[k] + "]";
+            }
+        }
+        assert.equal(tpl(obj), exp);
+    });
+});
