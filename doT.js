@@ -17,6 +17,7 @@ var doT = {
         forin:       /\{\{@(@)?\s*(?:\}\}|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\})/g, // {{@ }}
         varname:    'it',
         strip:      true,
+		selfcontained: false,
         append:     true
     },
     template: undefined, //fn, compile template
@@ -107,6 +108,7 @@ doT.template = function(tmpl, config, def) {
     var cse = config.append ? startend.append : startend.split,
         sid = 0,
         indv,
+		needHtmlEncode,
         str  = (config.use || config.define) ? resolveDefs(config, tmpl, def || {}) : tmpl;
 
     str = ("var out='" + (config.strip ? str.replace(/(^|\r|\n)\t* +| +\t*(\r|\n|$)/g,' ')
@@ -116,6 +118,7 @@ doT.template = function(tmpl, config, def) {
             return cse.start + safeObject(unescape(code)) + cse.end;
         })
         .replace(config.encode || skip, function(m, code) {
+			needHtmlEncode = true;
             return cse.start + unescape(code) + cse.endencode;
         })
         .replace(config.conditional || skip, function(m, elsecase, code) {
@@ -144,7 +147,9 @@ doT.template = function(tmpl, config, def) {
         .replace(/(\s|;|\}|^|\{)out\+='';/g, '$1').replace(/\+''/g, '')
         .replace(/(\s|;|\}|^|\{)out\+=''\+/g,'$1out+=');
 
-    str = "String.prototype.encodeHTML=(" + encodeHTMLSource.toString() + "());" + str;
+	if (needHtmlEncode && config.selfcontained) {
+	    str = "String.prototype.encodeHTML=(" + encodeHTMLSource.toString() + "());" + str;
+	}
 
     try {
         return new Function(config.varname, str);
